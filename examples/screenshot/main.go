@@ -1,22 +1,15 @@
-# rawcdp
-chrome remote debugging protocol for golang
+package main
 
-## インストール
+import (
+	"context"
+	"log"
+	"os"
 
-```
-go get github.com/maxbet1507/rawcdp
-```
+	"github.com/maxbet1507/rawcdp"
+)
 
-## 説明
-
-[Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)の低レイヤー実装です。
-ほとんどWebSocketをWrappingしている程度なので、__EXPERIMENTAL__になっているものも実行することができます。
-
-以下はPage.navigateしてページの全画面キャプチャーする処理のサンプルです。
-
-```golang
 func screenshot(ctx context.Context, url string) ([]byte, error) {
-	client, err := rawcdp.Connect("http://localhost:9222/json", nil)
+	client, err := rawcdp.Connect("http://localhost:9222/json", log.Println)
 	if err != nil {
 		return nil, err
 	}
@@ -71,9 +64,11 @@ func screenshot(ctx context.Context, url string) ([]byte, error) {
 	}
 	return cap.Data, nil
 }
-```
 
-便利なstructなどは提供していないので、自前で用意する必要はあります。
-
-rawcdp.ClientがWebSocketの直接のWrapperですが、
-そのまま使用するのはつらいのでrawcdp.Batchを経由して使うことを推奨します。
+func main() {
+	buf, err := screenshot(context.Background(), "http://github.com/maxbet1507")
+	if err != nil {
+		panic(err)
+	}
+	os.Stdout.Write(buf)
+}
